@@ -4,7 +4,7 @@ from prediction import get_meta_prediction, get_winrates_prediction, get_onehot_
 from utils import get_match_picks, read_heroes
 
 
-def display_hero_stats(dire_pick, radiant_pick, pred_pick):
+def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
     df = get_hero_stats(dire_pick, radiant_pick)
     if pred_pick == 'Dire':
         st.header("Predicted Hero Stats")
@@ -28,7 +28,7 @@ def display_hero_stats(dire_pick, radiant_pick, pred_pick):
             with against:
                 st.write(f"Against: {(1 - df.iloc[0][2 * i + 11]) * 100:.2f}%")
 
-    else:
+    elif pred_pick == 'Radiant':
         st.header("PREDICTED Hero Stats")
 
         hero, synergy, against = st.columns(3)
@@ -51,6 +51,29 @@ def display_hero_stats(dire_pick, radiant_pick, pred_pick):
             with against:
                 st.write(f"Against: {df.iloc[0][2 * i + 11] * 100:.2f}%")
         st.write('--------')
+    else:
+        st.header("Radiant Hero Stats")
+
+        hero, synergy, against = st.columns(3)
+        for i in range(5):
+            with hero:
+                st.write(f"{radiant_pick[i]}")
+            with synergy:
+                st.write(f"Synergy: {df.iloc[0][2 * i + 21] * 100:.2f}%")
+            with against:
+                st.write(f"Against: {(1 - df.iloc[0][2 * i + 11]) * 100:.2f}%")
+        st.write('---------')
+
+        st.header("Dire Hero Stats")
+        hero, synergy, against = st.columns(3)
+        for i in range(5):
+            with hero:
+                st.write(f"{dire_pick[i]}")
+            with synergy:
+                st.write(f"Synergy: {df.iloc[0][2 * i + 1] * 100:.2f}%")
+            with against:
+                st.write(f"Against: {df.iloc[0][2 * i + 11] * 100:.2f}%")
+        st.write('--------')
 
 
 def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_team='Radiant'):
@@ -64,6 +87,8 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
         st.json(radiant_pick)
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Radiant')
+    else:
+        display_hero_stats(dire_pick, radiant_pick)
 
     if float(ml_pred[0]) > 0.5 and float(nn_pred[0]) > 0.5:
         meta = get_meta_prediction(dire_pick, radiant_pick)
@@ -85,6 +110,9 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
         st.json(dire_pick)
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Dire')
+    else:
+        display_hero_stats(dire_pick, radiant_pick)
+
 
     if float(ml_pred[1]) > 0.5 and float(nn_pred[1] > 0.5):
         meta = get_meta_prediction(dire_pick, radiant_pick)
@@ -159,5 +187,5 @@ with tab2:
     if st.button("Predict", key=1):
         dire_pick = [d1, d2, d3, d4, d5]
         radiant_pick = [r1, r2, r3, r4, r5]
-        display_full_prediction(dire_pick, radiant_pick)
+        display_full_prediction(dire_pick, radiant_pick, )
 
