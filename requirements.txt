@@ -5,4 +5,4 @@ streamlit==1.38.0
 beautifulsoup4~=4.12.3
 requests~=2.32.3
 numpy~=2.1.1
-autogluon.tabular==1.1.1
+autogluon==1.1.1
