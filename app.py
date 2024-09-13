@@ -81,16 +81,14 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     ml_pred = get_winrates_prediction(dire_pick, radiant_pick)
     nn_pred = get_onehot_prediction(dire_pick, radiant_pick)
 
-    if float(ml_pred[0]) > 0.5 and float(nn_pred[0]) > 0.5:
+    if float(nn_pred[0]) > 0.5:
         st.header(f"{radiant_team}")
         st.write('-----')
         st.json(radiant_pick)
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Radiant')
-    else:
-        display_hero_stats(dire_pick, radiant_pick)
 
-    if float(ml_pred[0]) > 0.5 and float(nn_pred[0]) > 0.5:
+    if float(nn_pred[0]) > 0.5:
         meta = get_meta_prediction(dire_pick, radiant_pick)
         st.write('-----')
         meta_col, nn_col, ml_col = st.columns(3)
@@ -104,17 +102,14 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
             st.header("NL")
             st.metric('', f"{float(ml_pred[0]) * 100:.2f}%")
 
-    if float(ml_pred[1]) > 0.5 and float(nn_pred[1] > 0.5):
+    if float(nn_pred[1] > 0.5):
         st.header(f"{dire_team}")
         st.write('-----')
         st.json(dire_pick)
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Dire')
-    else:
-        display_hero_stats(dire_pick, radiant_pick)
 
-
-    if float(ml_pred[1]) > 0.5 and float(nn_pred[1] > 0.5):
+    if float(nn_pred[1] > 0.5):
         meta = get_meta_prediction(dire_pick, radiant_pick)
         st.write('-----')
 
