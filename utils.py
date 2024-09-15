@@ -112,21 +112,6 @@ def get_duel_features(winrates: dict, dire_pick: list, radiant_pick: list) -> tu
     return dire_duel_features, radiant_duel_features
 
 
-def train_test_dataset(matches_dataset, test_size=0.1):
-    filtered_dataset = matches_dataset[
-        (matches_dataset['dire_heroes'].apply(len) > 0) & (matches_dataset['radiant_heroes'].apply(len) > 0)]
-
-    train_df, test_df = train_test_split(filtered_dataset, test_size=test_size)
-
-    print(f"Train DataFrame shape: {train_df.shape}")
-    print(f"Test DataFrame shape: {test_df.shape}")
-
-    train_df.to_pickle('data/train_df.pkl')
-    test_df.to_pickle('data/test_df.pkl')
-
-    return train_df, test_df
-
-
 def features_winrates(dire_pick, radiant_pick):
     X = []
 
@@ -137,18 +122,6 @@ def features_winrates(dire_pick, radiant_pick):
     df = pd.DataFrame(X)
     df.columns = df.columns.map(str)
     return df
-
-
-def features_dataset_winrates(df, winrates=winrates_dict):
-    X = []
-    for i in range(len(df)):
-        feature_vec = get_feature_vec(winrates, df.iloc[i]['dire_heroes'], df.iloc[i]['radiant_heroes'])
-
-        feature_vec_with_label = feature_vec + [int(df.iloc[i]['dire_win'])]
-
-        X.append(feature_vec_with_label)
-
-    return pd.DataFrame(X)
 
 
 def get_onehot(pick):

@@ -1,8 +1,6 @@
-from utils import get_hero_matchups,features_winrates, features_onehot
+from utils import get_hero_matchups, features_winrates, features_onehot
 
 from autogluon.tabular import TabularPredictor
-
-ml_predictor = TabularPredictor.load('AutogluonModels/ml_models', require_version_match=False)
 
 predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models', require_version_match=False)
 
@@ -19,11 +17,6 @@ def get_meta_prediction(dire_pick, radiant_pick):
         avg_winrates[hero] = temp_df["winrate"].sum() / 5
     dire_win_prob = round(sum(avg_winrates.values()) / 5, 3)
     return {"dire": dire_win_prob, "radiant": 1 - dire_win_prob}
-
-
-def get_winrates_prediction(dire_pick, radiant_pick):
-    features_df = features_winrates(dire_pick, radiant_pick)
-    return ml_predictor.predict_proba(features_df, model='LightGBM_BAG_L1\\T10')
 
 
 def get_onehot_prediction(dire_pick, radiant_pick):
