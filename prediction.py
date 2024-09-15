@@ -21,7 +21,7 @@ def get_meta_prediction(dire_pick, radiant_pick):
 
 def get_onehot_prediction(dire_pick, radiant_pick):
     features_df = features_onehot(dire_pick, radiant_pick)
-    return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L2/17a72_00004')
+    return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L2\\17a72_00004')
 
 
 def get_hero_stats(dire_pick, radiant_pick):
