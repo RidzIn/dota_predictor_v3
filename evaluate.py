@@ -63,9 +63,7 @@ def evaluate_tournament(tournament, threshold=0.55):
         'y_true': y_true,
         'y_pred': y_pred,
         'is_correct': is_correct,
-        'pred_proba': pred_proba,
-        'y_pred_raw': y_pred_raw_list,
-        'y_unpred_raw': y_unpred_raw_list
+        'pred_proba': pred_proba
     })
 
     # Calculate and print accuracy

@@ -132,4 +132,4 @@ def parse_matches(match_dir, file_name="matches", filtered=True):
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-parse_matches('matches', '14_09_2024', filtered=False)
+parse_matches('matches', 'ti13_with_filter', filtered=True)
