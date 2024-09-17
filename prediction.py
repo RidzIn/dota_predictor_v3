@@ -6,9 +6,9 @@ from utils import get_hero_matchups, features_winrates, features_onehot
 
 from autogluon.tabular import TabularPredictor
 
-predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models', require_version_match=False)
+# predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models', require_version_match=False)
 
-# predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models_v2', require_version_match=False)
+predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models_v2', require_version_match=False)
 
 # WE PREDICT DIRE TEAM PROBABILITY TO WIN
 
@@ -24,10 +24,10 @@ def get_meta_prediction(dire_pick, radiant_pick):
     return {"dire": dire_win_prob, "radiant": 1 - dire_win_prob}
 
 
-def get_onehot_prediction(dire_pick, radiant_pick):
+def get_onehot_prediction(dire_pick, radiant_pick, model='NeuralNetTorch_BAG_L1\\5a9b23de'):
     features_df = features_onehot(dire_pick, radiant_pick)
-    return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L2\\17a72_00004')
-    # return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L1\\5a9b23de')
+    # return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L2\\17a72_00004')
+    return predictor_onehot.predict_proba(features_df, model=model)
 
 
 def get_hero_stats(dire_pick, radiant_pick):

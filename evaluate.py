@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 
-def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_included=False):
+def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_included=False, model='NeuralNetTorch_BAG_L1\\5a9b23de'):
     """
     Evaluate the tournament predictions and calculate accuracy.
 
@@ -31,7 +31,7 @@ def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_in
     for row in tqdm(tournament.itertuples()):
         # Get prediction
 
-        prediction_df = get_onehot_prediction(row.dire_heroes, row.radiant_heroes)
+        prediction_df = get_onehot_prediction(row.dire_heroes, row.radiant_heroes, model=model)
         # Prediction probability
         max_prob = prediction_df.values.max()
         if max_prob < threshold:
