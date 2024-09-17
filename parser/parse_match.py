@@ -4,8 +4,9 @@ import pandas as pd
 from tqdm import tqdm
 
 
-def filter_match(soup):
+def filter_match(soup, odds_threshold=1.65):
     teams = soup.find_all('a', class_='team__stats-name')
+
     if len(teams) < 2:
         return False, None
 
@@ -13,6 +14,7 @@ def filter_match(soup):
     team2_name = teams[1].get_text().strip()
 
     scores = soup.find('div', class_='score__scores')
+
     if not scores or len(scores.find_all('span')) < 2:
         return False, None
 
@@ -20,37 +22,103 @@ def filter_match(soup):
     team2_score = int(scores.find_all('span')[1].get_text().strip())
 
     percentages = soup.find_all('div', class_='percent')
+
+    # If no users votes on the match we find odds
     if len(percentages) < 2:
+        odds = parse_odds(soup)
+
+        # Odds were not parsed
+        if odds['team1_odds'] == 0:
+            return False, None
+
+        team1_odds = odds['team1_odds']
+        team2_odds = odds['team2_odds']
+
+        # Check if the teams are equal
+        if odds_threshold < team1_odds and odds_threshold < team2_odds:
+            return True, None
+
+        # Find the outsider team
+        if odds_threshold >= team1_odds:
+            outsider = 'team_2'
+        if odds_threshold >= team2_odds:
+            outsider = 'team_1'
+
+        result = {
+            "team_1": team1_name,
+            "team_2": team2_name,
+            "team_1_score": team1_score,
+            "team_2_score": team2_score,
+            "team_1_percentage": team1_odds,
+            "team_2_percentage": team2_odds,
+            'percentage_diff': round(team1_odds - team2_odds, 2)
+        }
+
+        if result[f'{outsider}_score'] > 0:
+            print(f"outsider won: {outsider} maps")
+            return True, result[outsider]
+
         return False, None
 
-    team1_percentage = float(percentages[0].get_text().strip()[:-1])
-    team2_percentage = float(percentages[1].get_text().strip()[:-1])
+    # If user votes are available on the page
+    else:
+        team1_percentage = float(percentages[0].get_text().strip()[:-1])
+        team2_percentage = float(percentages[1].get_text().strip()[:-1])
 
-    result = {
-        "team_1": team1_name,
-        "team_2": team2_name,
-        "team_1_score": team1_score,
-        "team_2_score": team2_score,
-        "team_1_percentage": team1_percentage,
-        "team_2_percentage": team2_percentage,
-        'percentage_diff': round(team1_percentage - team2_percentage, 2)
-    }
+        result = {
+            "team_1": team1_name,
+            "team_2": team2_name,
+            "team_1_score": team1_score,
+            "team_2_score": team2_score,
+            "team_1_percentage": team1_percentage,
+            "team_2_percentage": team2_percentage,
+            'percentage_diff': round(team1_percentage - team2_percentage, 2)
+        }
 
-    if abs(result['team_1_percentage'] - result['team_2_percentage']) < 20:
-        return True, None
+        if abs(result['team_1_percentage'] - result['team_2_percentage']) < 20:
+            return True, None
 
-    outsider = 'team_1' if result['team_1_percentage'] < result['team_2_percentage'] else 'team_2'
-    if result[f'{outsider}_score'] > 0:
-        print(f"outsider won: {outsider} maps")
-        return True, result[outsider]
+        outsider = 'team_1' if result['team_1_percentage'] < result['team_2_percentage'] else 'team_2'
+        if result[f'{outsider}_score'] > 0:
+            print(f"outsider won: {outsider} maps")
+            return True, result[outsider]
 
-    return False, None
+        return False, None
+
+
+
+def parse_odds(soup):
+    result = []
+
+    rows = soup.find_all('a', class_='table__body-row')
+    for row in rows:
+        map_info = {}
+
+        odds_cell = row.find('div', class_='table__body-row__cell width-50 align-right')
+        if odds_cell:
+            cell_div = odds_cell.find('div', class_='cell')
+            if cell_div:
+                bookmakers_items = cell_div.find_all('div', class_='bookmakers__item')
+                for item in bookmakers_items:
+                    title_div = item.find('div', class_='bookmakers__item-title')
+                    if title_div and title_div.text.strip() == 'Map 1':
+                        bets = item.find_all('span', class_='bookmakers__item-bet')
+                        if len(bets) == 2:
+                            map_info['team1_odds'] = float(bets[0].text.strip())
+                            map_info['team2_odds'] = float(bets[1].text.strip())
+                            result.append(map_info)
+                            break
+    if len(result) == 0:
+        return {'team1_odds': 0.0, 'team2_odds': 0.0}
+    return result[0]
 
 
 def parse_match_info(soup, outsider_name=None):
-    maps = soup.find_all('div', class_='map__finished-v2')
     result = []
 
+    odds_dict = parse_odds(soup)
+
+    maps = soup.find_all('div', class_='map__finished-v2')
     for map_div in maps:
         map_info = {'map_number': map_div.find('span').text.strip()}
 
@@ -76,10 +144,18 @@ def parse_match_info(soup, outsider_name=None):
                 map_info['dire_team'] = team_name
                 map_info['dire_heroes'] = heroes
                 map_info['dire_win'] = win_status
+                if i == 0:
+                    map_info['dire_odds'] = odds_dict['team1_odds']
+                else:
+                    map_info['dire_odds'] = odds_dict['team2_odds']
             elif side == 'radiant':
                 map_info['radiant_team'] = team_name
                 map_info['radiant_heroes'] = heroes
                 map_info['radiant_win'] = win_status
+                if i == 0:
+                    map_info['radiant_odds'] = odds_dict['team1_odds']
+                else:
+                    map_info['radiant_odds'] = odds_dict['team2_odds']
 
         if map_info.get('dire_win', False):
             map_info['winner'] = map_info['dire_team']
@@ -88,15 +164,16 @@ def parse_match_info(soup, outsider_name=None):
         else:
             map_info['winner'] = 'Unknown'
 
-        if len(map_info['dire_heroes']) == 5 and len(map_info['radiant_heroes']) == 5:
+
+        if len(map_info.get('dire_heroes', [])) == 5 and len(map_info.get('radiant_heroes', [])) == 5:
             if outsider_name is None:
                 result.append(map_info)
-            if outsider_name and map_info['winner'] == outsider_name:
+            elif outsider_name and map_info['winner'] == outsider_name:
                 result.append(map_info)
     return result
 
 
-def parse_matches(match_dir, file_name="matches", filtered=True):
+def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=1.7):
     if not os.path.exists(match_dir):
         raise FileNotFoundError(f"Match directory not found: {match_dir}")
 
@@ -110,7 +187,7 @@ def parse_matches(match_dir, file_name="matches", filtered=True):
                 content = file.read()
             soup = BeautifulSoup(content, 'html.parser')
 
-            match_passed_the_filter, outsider_team = filter_match(soup)
+            match_passed_the_filter, outsider_team = filter_match(soup, odds_threshold=odds_threshold)
 
             if match_passed_the_filter:
                 match_info = parse_match_info(soup, outsider_team)
@@ -132,4 +209,6 @@ def parse_matches(match_dir, file_name="matches", filtered=True):
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-parse_matches('matches', 'ti13_with_filter', filtered=True)
+# parse_matches('matches', 'ti13', filtered=False)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\minor', 'matches_new_filter_v2.pkl', filtered=True, odds_threshold=1.69)
+

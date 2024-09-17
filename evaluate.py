@@ -1,9 +1,14 @@
+from collections import Counter
+
+from numpy import mean
+from tqdm import tqdm
+
 from prediction import get_onehot_prediction
 import pandas as pd
 import numpy as np
 
 
-def evaluate_tournament(tournament, threshold=0.55):
+def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_included=False):
     """
     Evaluate the tournament predictions and calculate accuracy.
 
@@ -20,10 +25,10 @@ def evaluate_tournament(tournament, threshold=0.55):
     teams = []
     is_correct = []
     match_infos = []
-    y_pred_raw_list = []
-    y_unpred_raw_list = []
     passed_matches = 0
-    for row in tournament.itertuples():
+    predicted_odds = []
+    total_bank = 0
+    for row in tqdm(tournament.itertuples()):
         # Get prediction
 
         prediction_df = get_onehot_prediction(row.dire_heroes, row.radiant_heroes)
@@ -39,6 +44,20 @@ def evaluate_tournament(tournament, threshold=0.55):
 
         # Predicted result
         predicted_dire_win = bool(prediction_df.values.argmax())
+        if float(row.dire_odds) > 1:
+            if predicted_dire_win == actual_dire_win:
+                if actual_dire_win == 0:
+                    total_bank += (float(row.radiant_odds) * bet_amount - bet_amount)
+                else:
+                    total_bank += (float(row.dire_odds) * bet_amount - bet_amount)
+            else:
+                total_bank -= bet_amount
+
+        if only_odds_included:
+            if row.dire_odds == 0.0:
+                continue
+        predicted_odds.append(float(row.dire_odds) if predicted_dire_win else float(row.radiant_odds))
+
         predicted_team = row.dire_team if predicted_dire_win else row.radiant_team
 
         passed_matches += 1
@@ -50,6 +69,7 @@ def evaluate_tournament(tournament, threshold=0.55):
         # Match and team info
         match_info = f"|Match ID: {row.match_id} | Map {row.map_number}|"
         match_infos.append(match_info)
+
         team_info = f"{row.radiant_team} | {row.dire_team}"
         teams.append(team_info)
 
@@ -62,13 +82,21 @@ def evaluate_tournament(tournament, threshold=0.55):
         'teams': teams,
         'y_true': y_true,
         'y_pred': y_pred,
+        'pred_odd': predicted_odds,
         'is_correct': is_correct,
         'pred_proba': pred_proba
     })
 
+    temp_pred_odds = []
+    for i in predicted_odds:
+        if i > 1:
+            temp_pred_odds.append(i)
+
+
     # Calculate and print accuracy
     accuracy = np.mean(is_correct)
     print(f"Prediction_method: NN")
+    print(f"Your bet: {bet_amount} | You earn: {total_bank} | Mean odd: {mean(temp_pred_odds):.2f}")
     print(f"Accuracy: {accuracy:.2%} | Right: {sum(is_correct)} | Wrong: {passed_matches - sum(is_correct)}")
     print("-------------------------------")
     return df

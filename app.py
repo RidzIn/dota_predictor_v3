@@ -1,6 +1,6 @@
 import streamlit as st
 
-from prediction import get_meta_prediction, get_onehot_prediction, get_hero_stats
+from prediction import get_meta_prediction, get_onehot_prediction, get_hero_stats, parse_match_info_for_gui
 from utils import get_match_picks, read_heroes
 
 
@@ -60,7 +60,11 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     if float(nn_pred[0]) > 0.5:
         st.header(f"{radiant_team}")
         st.write('-----')
-        st.json(radiant_pick)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.json(radiant_pick)
+        with col2:
+            st.metric('', f"{float(nn_pred[0]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Radiant')
 
@@ -77,7 +81,11 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     if float(nn_pred[1] > 0.5):
         st.header(f"{dire_team}")
         st.write('-----')
-        st.json(dire_pick)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.json(dire_pick)
+        with col2:
+            st.metric('', f"{float(nn_pred[1]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Dire')
 
@@ -94,7 +102,16 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     st.write('-----')
 
 
-tab1, tab2 = st.tabs(["Link", 'Test Yourself'])
+tab0, tab1, tab2 = st.tabs(["Link", 'Match id', 'Test Yourself'])
+
+with tab0:
+    st.header("Insert Link")
+    link = st.text_input(label="Enter")
+    map_number = st.selectbox("Map number:", list(range(1, 5)))
+    predict_button = st.button('Predict')
+    if predict_button:
+        match_info = parse_match_info_for_gui(link, map_number)
+        display_full_prediction(match_info['dire_heroes'], match_info['radiant_heroes'], match_info['dire_team'], match_info['radiant_team'])
 
 with tab1:
     match_id = st.number_input(label="Put match id")
