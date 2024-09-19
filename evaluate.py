@@ -1,14 +1,14 @@
-from collections import Counter
+from copy import copy
 
-from numpy import mean
+from autogluon.tabular import TabularPredictor
+from matplotlib import pyplot as plt
 from tqdm import tqdm
-
-from prediction import get_onehot_prediction
+from prediction import get_prediction
 import pandas as pd
 import numpy as np
 
 
-def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_included=False, model='NeuralNetTorch_BAG_L1\\5a9b23de'):
+def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount=100, only_odds_included=False, radiant_first=False):
     """
     Evaluate the tournament predictions and calculate accuracy.
 
@@ -30,8 +30,11 @@ def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_in
     total_bank = 0
     for row in tqdm(tournament.itertuples()):
         # Get prediction
+        if radiant_first:
+            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=True)
+        else:
+            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model)
 
-        prediction_df = get_onehot_prediction(row.dire_heroes, row.radiant_heroes, model=model)
         # Prediction probability
         max_prob = prediction_df.values.max()
         if max_prob < threshold:
@@ -43,7 +46,11 @@ def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_in
         winning_team = row.dire_team if actual_dire_win else row.radiant_team
 
         # Predicted result
-        predicted_dire_win = bool(prediction_df.values.argmax())
+        if radiant_first:
+            predicted_dire_win = bool(prediction_df.values.argmin())
+        else:
+            predicted_dire_win = bool(prediction_df.values.argmax())
+
         if float(row.dire_odds) > 1:
             if predicted_dire_win == actual_dire_win:
                 if actual_dire_win == 0:
@@ -92,32 +99,58 @@ def evaluate_tournament(tournament, threshold=0.55, bet_amount=100, only_odds_in
         if i > 1:
             temp_pred_odds.append(i)
 
-
-    # Calculate and print accuracy
-    accuracy = np.mean(is_correct)
-    print(f"Prediction_method: NN")
-    print(f"Your bet: {bet_amount} | You earn: {total_bank} | Mean odd: {mean(temp_pred_odds):.2f}")
-    print(f"Accuracy: {accuracy:.2%} | Right: {sum(is_correct)} | Wrong: {passed_matches - sum(is_correct)}")
-    print("-------------------------------")
+    print_stat(df, 'Radiant first', bet_amount, total_bank)
     return df
 
 
-# def evaluate_combination(tournament=None, nn_df=None, ml_df=None):
-#     if tournament is not None:
-#         ml_df = evaluate_tournament(tournament, prediction_method='ML')
-#         nn_df = evaluate_tournament(tournament, prediction_method='NN')
-#
-#     combined_df = copy(nn_df)
-#     combined_df['ml_pred'] = ml_df['pred_proba']
-#
-#     for i in range(len(nn_df)):
-#         if nn_df.iloc[i]['y_pred'] != ml_df.iloc[i]['y_pred']:
-#             combined_df.drop(i, inplace=True)
-#
-#     accuracy = np.mean(combined_df['is_correct'])
-#     print(f"Prediction_method: Combination")
-#     print(f"Matches length: {len(nn_df)} | Combination length: {len(combined_df)}")
-#     print(f"Accuracy: {accuracy:.2%} | Right: {sum(combined_df['is_correct'])} | Wrong: {len(combined_df) - sum(combined_df['is_correct'])}")
-#     print("-------------------------------")
-#
-#     return {'combined_df': combined_df, 'ml_df': ml_df, 'nn_df': nn_df}
+def print_stat(df, method, bet_amount, total_bank):
+    right_pred_q_40 = round(df[df['is_correct'] == True]['pred_odd'].quantile(0.4), 2)
+    right_pred_q_60 = round(df[df['is_correct'] == True]['pred_odd'].quantile(0.6), 2)
+
+    wrong_pred_q_40 = round(df[df['is_correct'] == False]['pred_odd'].quantile(0.4), 2)
+    wrong_pred_q_60 = round(df[df['is_correct'] == False]['pred_odd'].quantile(0.6), 2)
+
+
+    print(f"Prediction_method: {method}")
+    print("-------------------------------")
+    print(f"DataFrame length: {len(df)}")
+    print(
+        f"Right prediction odd: [ {right_pred_q_40} : {right_pred_q_60} ] | Right prediction odd: [ {wrong_pred_q_40} : {wrong_pred_q_60} ]")
+    print(f"Bet amount: {bet_amount} | Total earning: {total_bank:.2f}")
+    print(
+        f"Accuracy: {np.mean(df['is_correct']):.2%} | Right: {sum(df['is_correct'])} | Wrong: {len(df) - sum(df['is_correct'])}")
+    print("-------------------------------")
+
+    num_bins = 5  # Number of groups to divide the data into
+    df['odd_range'] = pd.qcut(df['pred_odd'], q=num_bins, precision=2)
+
+    # Group data by odd ranges and count correct and incorrect predictions
+    grouped = df.groupby('odd_range', observed=True)['is_correct'].value_counts().unstack().fillna(0)
+
+    # Create the bar plot
+    grouped.plot(kind='bar', stacked=False, color=['red', 'green'], figsize=(12, 6))
+    plt.title('Number of Correct and Incorrect Predictions by Quantile Odd Ranges')
+    plt.xlabel('Odd Range')
+    plt.ylabel('Number of Predictions')
+    plt.legend(['Incorrect', 'Correct'])
+    plt.show()
+
+
+def evaluate_combination(df_1, df_2, bet_amount=100):
+    combined_df = copy(df_1)
+    combined_df['y_pred'] = df_2['y_pred']
+
+    for i in range(len(df_1)):
+        if df_1.iloc[i]['y_pred'] != df_2.iloc[i]['y_pred']:
+            combined_df.drop(i, inplace=True)
+
+    total_bank = 0
+    for i in range(len(combined_df)):
+        if combined_df.iloc[i]['y_pred'] == combined_df.iloc[i]['y_true']:
+            total_bank += (bet_amount * combined_df.iloc[i]['pred_odd'] - bet_amount)
+        else:
+            total_bank -= bet_amount
+
+    print_stat(combined_df, 'Combination', bet_amount, total_bank)
+
+    return combined_df

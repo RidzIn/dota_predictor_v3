@@ -3,7 +3,6 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
-
 def filter_match(soup, odds_threshold=1.65):
     teams = soup.find_all('a', class_='team__stats-name')
 
@@ -64,6 +63,10 @@ def filter_match(soup, odds_threshold=1.65):
     else:
         team1_percentage = float(percentages[0].get_text().strip()[:-1])
         team2_percentage = float(percentages[1].get_text().strip()[:-1])
+
+        # In BO2 matches there are 3 posible outcomes, so I need to find outcome for 2:0 for second team
+        if team2_percentage + team1_percentage < 99:
+            team2_percentage = 100 - (team1_percentage + team2_percentage)
 
         result = {
             "team_1": team1_name,
@@ -168,7 +171,17 @@ def parse_match_info(soup, outsider_name=None):
         if len(map_info.get('dire_heroes', [])) == 5 and len(map_info.get('radiant_heroes', [])) == 5:
             if outsider_name is None:
                 result.append(map_info)
+
+            # sometimes odds are messed up, I switch them
             elif outsider_name and map_info['winner'] == outsider_name:
+                if outsider_name == map_info['dire_team'] and map_info['dire_odds'] < map_info['radiant_odds']:
+                    temp = map_info['dire_odds']
+                    map_info['dire_odds'] = map_info['radiant_odds']
+                    map_info['radiant_odds'] = temp
+                if outsider_name == map_info['radiant_team'] and map_info['radiant_odds'] < map_info['dire_odds']:
+                    temp = map_info['dire_odds']
+                    map_info['dire_odds'] = map_info['radiant_odds']
+                    map_info['radiant_odds'] = temp
                 result.append(map_info)
     return result
 
@@ -209,6 +222,6 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-# parse_matches('matches', 'ti13', filtered=False)
-# parse_matches('C:\\Users\\Ridz\\Desktop\\minor', 'matches_new_filter_v2.pkl', filtered=True, odds_threshold=1.69)
+#  parse_matches('matches', 'addition_matches', filtered=True, odds_threshold=1.69)
+parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'matches_v4', filtered=True, odds_threshold=1.69)
 

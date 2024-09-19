@@ -151,4 +151,6 @@ def update_winrates(data_file_path, winrates_file_name):
         json.dump(winrates_dict, outfile)
 
 # update_winrates("C:\\Users\\Ridz\\Desktop\\Matches\\major_matches.pkl", "data/winrates_major_v2.json")
-# update_winrates("C:\\Users\\Ridz\\Desktop\\Matches\\minor_matches.pkl", "data/winrates_minor_v2.json")
+
+
+update_winrates("data/matches_v4.pkl", "data/winrates.json")

@@ -1,7 +1,17 @@
 import streamlit as st
+from autogluon.tabular import TabularPredictor
 
-from prediction import get_meta_prediction, get_onehot_prediction, get_hero_stats, parse_match_info_for_gui
+from prediction import get_prediction, get_hero_stats, parse_match_info_for_gui, get_meta_prediction
 from utils import get_match_picks, read_heroes
+
+
+
+predictor_dire = TabularPredictor.load('AutogluonModels/dire_first', require_version_match=False)
+dire_model = 'NeuralNetTorch_r36_BAG_L2\\e1e10a75'
+
+
+predictor_radiant = TabularPredictor.load('AutogluonModels/radiant_first', require_version_match=False)
+radiant_model = 'LightGBM_BAG_L1\\T10'
 
 
 def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
@@ -55,51 +65,42 @@ def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
 
 def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_team='Radiant'):
 
-    nn_pred = get_onehot_prediction(dire_pick, radiant_pick)
-
-    if float(nn_pred[0]) > 0.5:
+    dire_pred = get_prediction(dire_pick, radiant_pick, predictor_dire, dire_model)
+    radiant_pred = get_prediction(dire_pick, radiant_pick, predictor_radiant, radiant_model, radiant_first=True)
+    if float(dire_pred[0]) > 0.5:
         st.header(f"{radiant_team}")
         st.write('-----')
         col1, col2 = st.columns(2)
         with col1:
             st.json(radiant_pick)
         with col2:
-            st.metric('', f"{float(nn_pred[0]) * 100:.2f}%")
+            st.metric('', f"{float(dire_pred[0]) * 100:.2f}%")
+            st.metric('', f"{float(radiant_pred[1]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Radiant')
 
-    if float(nn_pred[0]) > 0.5:
-        meta = get_meta_prediction(dire_pick, radiant_pick)
-        meta_col, nn_col = st.columns(2)
-        with meta_col:
-            st.header("Meta")
-            st.metric('', f"{meta['radiant'] * 100:.2f}%")
-        with nn_col:
-            st.header("NN")
-            st.metric('', f"{float(nn_pred[0]) * 100:.2f}%")
-
-    if float(nn_pred[1] > 0.5):
+    if float(dire_pred[1] > 0.5):
         st.header(f"{dire_team}")
         st.write('-----')
         col1, col2 = st.columns(2)
         with col1:
             st.json(dire_pick)
         with col2:
-            st.metric('', f"{float(nn_pred[1]) * 100:.2f}%")
+            st.metric('', f"{float(dire_pred[1]) * 100:.2f}%")
+            st.metric('', f"{float(radiant_pred[0]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Dire')
 
-    if float(nn_pred[1] > 0.5):
-        meta = get_meta_prediction(dire_pick, radiant_pick)
+    meta_pred = get_meta_prediction(dire_pick, radiant_pick)
 
-        meta_col, nn_col = st.columns(2)
-        with meta_col:
-            st.header("Meta")
-            st.metric('', f"{meta['dire'] * 100:.2f}%")
-        with nn_col:
-            st.header("NN")
-            st.metric('', f"{float(nn_pred[1]) * 100:.2f}%")
-    st.write('-----')
+    st.write("-----")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.header(f"**{dire_team}**")
+        st.metric("", f"{meta_pred['dire']*100:.2f}%")
+    with col2:
+        st.header(f"**{radiant_team}**")
+        st.metric("", f"{meta_pred['radiant'] * 100:.2f}%")
 
 
 tab0, tab1, tab2 = st.tabs(["Link", 'Match id', 'Test Yourself'])

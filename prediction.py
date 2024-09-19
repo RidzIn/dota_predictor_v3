@@ -1,16 +1,14 @@
 import urllib
-
 from bs4 import BeautifulSoup
-
-from utils import get_hero_matchups, features_winrates, features_onehot
-
+from utils import get_hero_matchups, features_winrates, features_onehot, features_onehot_radiant_first
 from autogluon.tabular import TabularPredictor
 
-# predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models', require_version_match=False)
 
-predictor_onehot = TabularPredictor.load('AutogluonModels/nn_models_v2', require_version_match=False)
+# NeuralNetTorch_r36_BAG_L2\e1e10a75
+predictor_dire = TabularPredictor.load('AutogluonModels/dire_first', require_version_match=False)
 
-# WE PREDICT DIRE TEAM PROBABILITY TO WIN
+# LightGBM_BAG_L1\T10
+predictor_radiant = TabularPredictor.load('AutogluonModels/radiant_first', require_version_match=False)
 
 
 def get_meta_prediction(dire_pick, radiant_pick):
@@ -24,10 +22,15 @@ def get_meta_prediction(dire_pick, radiant_pick):
     return {"dire": dire_win_prob, "radiant": 1 - dire_win_prob}
 
 
-def get_onehot_prediction(dire_pick, radiant_pick, model='NeuralNetTorch_BAG_L1\\5a9b23de'):
-    features_df = features_onehot(dire_pick, radiant_pick)
-    # return predictor_onehot.predict_proba(features_df, model='NeuralNetTorch_BAG_L2\\17a72_00004')
-    return predictor_onehot.predict_proba(features_df, model=model)
+def get_prediction(dire_pick, radiant_pick, predictor, model, radiant_first=False):
+    if radiant_first:
+        features_df = features_onehot_radiant_first(dire_pick, radiant_pick)
+        pred = predictor.predict_proba(features_df, model=model)
+    else:
+        features_df = features_onehot(dire_pick, radiant_pick)
+        pred = predictor.predict_proba(features_df, model=model)
+
+    return pred
 
 
 def get_hero_stats(dire_pick, radiant_pick):

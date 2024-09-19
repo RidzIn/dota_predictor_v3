@@ -145,10 +145,31 @@ def features_dataset_onehot(df):
     return pd.DataFrame(X)
 
 
+def features_dataset_onehot_radiant_first(df):
+    X = []
+    for i in range(len(df)):
+
+        combined_array = np.concatenate((get_onehot(df.iloc[i]['radiant_heroes']), get_onehot(df.iloc[i]['dire_heroes']), [int(df.iloc[i]['radiant_win'])]))
+        X.append(combined_array)
+
+    return pd.DataFrame(X)
+
+
 def features_onehot(dire_pick, radiant_pick):
     X = []
 
     combined_array = np.concatenate((get_onehot(dire_pick), get_onehot(radiant_pick), [0]))
+    X.append(combined_array)
+
+    df = pd.DataFrame(X)
+    df.columns = df.columns.map(str)
+    return df
+
+
+def features_onehot_radiant_first(dire_pick, radiant_pick):
+    X = []
+
+    combined_array = np.concatenate((get_onehot(radiant_pick), get_onehot(dire_pick), [0]))
     X.append(combined_array)
 
     df = pd.DataFrame(X)
