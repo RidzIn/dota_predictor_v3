@@ -1,9 +1,9 @@
 {
-  "system": "Windows",
+  "system": "Linux",
   "version": "1.1.1",
   "lite": false,
   "py_version": "3.11",
-  "py_version_micro": "3.11.5",
+  "py_version_micro": "3.11.10",
   "packages": {
     "gitpython": "3.1.43",
     "markdown": "3.7",
