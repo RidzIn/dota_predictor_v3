@@ -7,4 +7,4 @@ autogluon==1.1.1
 bs4~=0.0.2
 numpy~=1.26.4
 matplotlib==3.9.2
-scikit-learn==1.4.0
+scikit-learn==1.5.1
