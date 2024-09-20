@@ -3,10 +3,6 @@ from autogluon.tabular import TabularPredictor
 
 from prediction import get_prediction, get_hero_stats, parse_match_info_for_gui, get_meta_prediction
 from utils import get_match_picks, read_heroes
-import subprocess
-import sys
-
-subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn==1.5.1"])
 
 
 predictor_dire = TabularPredictor.load('AutogluonModels/dire_first', require_version_match=False)
