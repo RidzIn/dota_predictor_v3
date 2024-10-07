@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
+
 def filter_match(soup, odds_threshold=1.65):
     teams = soup.find_all('a', class_='team__stats-name')
 
@@ -78,7 +79,7 @@ def filter_match(soup, odds_threshold=1.65):
             'percentage_diff': round(team1_percentage - team2_percentage, 2)
         }
 
-        if abs(result['team_1_percentage'] - result['team_2_percentage']) < 20:
+        if abs(result['team_1_percentage'] - result['team_2_percentage']) < 5:
             return True, None
 
         outsider = 'team_1' if result['team_1_percentage'] < result['team_2_percentage'] else 'team_2'
@@ -223,5 +224,5 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
 
 
 #  parse_matches('matches', 'addition_matches', filtered=True, odds_threshold=1.69)
-parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'matches_v4', filtered=True, odds_threshold=1.69)
+parse_matches('C:\\Users\\Ridz\\Desktop\\matches all', 'matches_v5', filtered=True, odds_threshold=1.75)
 

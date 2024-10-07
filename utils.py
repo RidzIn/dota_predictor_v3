@@ -14,6 +14,10 @@ with open('data/util/heroes_encoder.json') as file:
     id_heroes_names = json.load(file)
 
 
+with open('data/util/heroes_attributes.json') as file:
+    heroes_attributes = json.load(file)
+
+
 def read_heroes(file_name="data/util/heroes.txt"):
     """
     Take txt file of heroes and return set object
@@ -123,7 +127,7 @@ def features_winrates(dire_pick, radiant_pick):
     return df
 
 
-def get_onehot(pick):
+def get_onehot(pick, is_dire=True):
     one_hot_encoded = np.zeros(139, dtype=int)
 
     for pos, hero in enumerate(pick):
@@ -131,7 +135,10 @@ def get_onehot(pick):
             hero = 'Outworld Destroyer'
         encode_hero = id_heroes_names[hero]
 
-        one_hot_encoded[int(encode_hero) - 1] = pos+1
+        if is_dire:
+            one_hot_encoded[int(encode_hero) - 1] = 1
+        else:
+            one_hot_encoded[int(encode_hero) - 1] = -1
     return one_hot_encoded
 
 
@@ -139,7 +146,35 @@ def features_dataset_onehot(df):
     X = []
     for i in range(len(df)):
 
-        combined_array = np.concatenate((get_onehot(df.iloc[i]['dire_heroes']), get_onehot(df.iloc[i]['radiant_heroes']), [int(df.iloc[i]['dire_win'])]))
+        combined_array = np.concatenate((get_onehot(df.iloc[i]['dire_heroes']), get_onehot(df.iloc[i]['radiant_heroes'], is_dire=False), [int(df.iloc[i]['dire_win'])]))
+        X.append(combined_array)
+
+    return pd.DataFrame(X)
+
+
+def features_dataset_encoded(df):
+    X = []
+    for i in range(len(df)):
+        combined_array = []
+        for h in df.iloc[i]['dire_heroes']:
+            if 'Outworld Devourer' == h:
+                h = 'Outworld Destroyer'
+
+            combined_array.append(id_heroes_names[h])
+
+            for w in list(heroes_attributes[h].values())[:-1]:
+                combined_array.append(w)
+
+
+        for h in df.iloc[i]['radiant_heroes']:
+            if 'Outworld Devourer' == h:
+                h = 'Outworld Destroyer'
+            combined_array.append(id_heroes_names[h])
+
+            for w in list(heroes_attributes[h].values())[:-1]:
+                combined_array.append(w)
+
+        combined_array.append(df.iloc[i]['dire_win'])
         X.append(combined_array)
 
     return pd.DataFrame(X)
