@@ -10,55 +10,6 @@ predictor_dire = TabularPredictor.load('models_v2/dire_first', require_version_m
 dire_model = 'CatBoost_r50_FULL'
 
 
-def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
-    df = get_hero_stats(dire_pick, radiant_pick)
-    if pred_pick == 'Dire':
-        st.header("Predicted Hero Stats")
-        hero, synergy, against = st.columns(3)
-        for i in range(5):
-            with hero:
-                st.write(f"{dire_pick[i]}")
-            with synergy:
-                st.write(f"Synergy: {df.iloc[0][2 * i + 1] * 100:.2f}%")
-            with against:
-                st.write(f"Against: {df.iloc[0][2 * i + 11] * 100:.2f}%")
-        st.write('--------')
-
-        st.header("Unpredicted Hero Stats")
-        hero, synergy, against = st.columns(3)
-        for i in range(5):
-            with hero:
-                st.write(f"{radiant_pick[i]}")
-            with synergy:
-                st.write(f"Synergy: {df.iloc[0][2 * i + 21] * 100:.2f}%")
-            with against:
-                st.write(f"Against: {(1 - df.iloc[0][2 * i + 11]) * 100:.2f}%")
-
-    elif pred_pick == 'Radiant':
-        st.header("PREDICTED Hero Stats")
-
-        hero, synergy, against = st.columns(3)
-        for i in range(5):
-            with hero:
-                st.write(f"{radiant_pick[i]}")
-            with synergy:
-                st.write(f"Synergy: {df.iloc[0][2 * i + 21] * 100:.2f}%")
-            with against:
-                st.write(f"Against: {(1 - df.iloc[0][2 * i + 11]) * 100:.2f}%")
-        st.write('---------')
-
-        st.header("UNPREDICTED Hero Stats")
-        hero, synergy, against = st.columns(3)
-        for i in range(5):
-            with hero:
-                st.write(f"{dire_pick[i]}")
-            with synergy:
-                st.write(f"Synergy: {df.iloc[0][2 * i + 1] * 100:.2f}%")
-            with against:
-                st.write(f"Against: {df.iloc[0][2 * i + 11] * 100:.2f}%")
-        st.write('--------')
-
-
 def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_team='Radiant'):
 
     print(dire_pick)
@@ -75,7 +26,6 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
         with col2:
             st.metric('', f"{float(dire_pred[False]) * 100:.2f}%")
         st.write('-----')
-        display_hero_stats(dire_pick, radiant_pick, 'Radiant')
 
     if float(dire_pred[True] > 0.5):
         st.header(f"{dire_team}")
@@ -86,18 +36,6 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
         with col2:
             st.metric('', f"{float(dire_pred[True]) * 100:.2f}%")
         st.write('-----')
-        display_hero_stats(dire_pick, radiant_pick, 'Dire')
-
-    meta_pred = get_meta_prediction(dire_pick, radiant_pick)
-
-    st.write("-----")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.header(f"**{dire_team}**")
-        st.metric("", f"{meta_pred['dire']*100:.2f}%")
-    with col2:
-        st.header(f"**{radiant_team}**")
-        st.metric("", f"{meta_pred['radiant'] * 100:.2f}%")
 
 
 tab0, tab1, tab2 = st.tabs(["Link", 'Match id', 'Test Yourself'])
@@ -111,12 +49,6 @@ with tab0:
         match_info = parse_match_info_for_gui(link, map_number)
         display_full_prediction(match_info['dire_heroes'], match_info['radiant_heroes'], match_info['dire_team'], match_info['radiant_team'])
 
-with tab1:
-    match_id = st.number_input(label="Put match id")
-
-    if st.button("Predict", key=2):
-        temp_dict = get_match_picks(int(match_id))
-        display_full_prediction(temp_dict['dire'], temp_dict['radiant'], temp_dict['dire_team'], temp_dict['radiant_team'])
 
 with tab2:
     heroes = read_heroes()
