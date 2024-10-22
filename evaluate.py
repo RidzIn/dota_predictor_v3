@@ -1,6 +1,5 @@
 from copy import copy
 
-from autogluon.tabular import TabularPredictor
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from prediction import get_prediction
@@ -8,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 
-def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount=100, only_odds_included=False, radiant_first=False):
+def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount=100, only_odds_included=False, radiant_first=False, method='Unknown'):
     """
     Evaluate the tournament predictions and calculate accuracy.
 
@@ -33,7 +32,7 @@ def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount
         if radiant_first:
             prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=True)
         else:
-            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model)
+            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=False)
 
         # Prediction probability
         max_prob = prediction_df.values.max()
@@ -47,7 +46,7 @@ def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount
 
         # Predicted result
         if radiant_first:
-            predicted_dire_win = bool(prediction_df.values.argmin())
+            predicted_dire_win = bool(prediction_df.values.argmax())
         else:
             predicted_dire_win = bool(prediction_df.values.argmax())
 
@@ -99,8 +98,8 @@ def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount
         if i > 1:
             temp_pred_odds.append(i)
 
-    print_stat(df, 'Radiant first', bet_amount, total_bank)
-    return df
+    print_stat(df, method, bet_amount, total_bank)
+    return df, total_bank
 
 
 def print_stat(df, method, bet_amount, total_bank):
@@ -115,14 +114,14 @@ def print_stat(df, method, bet_amount, total_bank):
     print("-------------------------------")
     print(f"DataFrame length: {len(df)}")
     print(
-        f"Right prediction odd: [ {right_pred_q_40} : {right_pred_q_60} ] | Right prediction odd: [ {wrong_pred_q_40} : {wrong_pred_q_60} ]")
+        f"Right prediction odd: [ {right_pred_q_40} : {right_pred_q_60} ] | Wrong prediction odd: [ {wrong_pred_q_40} : {wrong_pred_q_60} ]")
     print(f"Bet amount: {bet_amount} | Total earning: {total_bank:.2f}")
     print(
         f"Accuracy: {np.mean(df['is_correct']):.2%} | Right: {sum(df['is_correct'])} | Wrong: {len(df) - sum(df['is_correct'])}")
     print("-------------------------------")
 
-    num_bins = 5  # Number of groups to divide the data into
-    df['odd_range'] = pd.qcut(df['pred_odd'], q=num_bins, precision=2)
+    bin_edges = [0, 1.4, 1.7, 2.0, 3.0, 6.0]
+    df['odd_range'] = pd.cut(df['pred_odd'], bins=bin_edges, include_lowest=True)
 
     # Group data by odd ranges and count correct and incorrect predictions
     grouped = df.groupby('odd_range', observed=True)['is_correct'].value_counts().unstack().fillna(0)

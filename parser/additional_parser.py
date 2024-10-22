@@ -1,4 +1,3 @@
-import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -35,6 +34,7 @@ def get_heroes_attributes():
         driver.quit()
 
     return result_list
+
 
 def parse_hero_attribute_data(driver, wait, url):
     try:

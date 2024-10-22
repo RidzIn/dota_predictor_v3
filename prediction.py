@@ -1,14 +1,6 @@
 import urllib
 from bs4 import BeautifulSoup
-from utils import get_hero_matchups, features_winrates, features_onehot, features_onehot_radiant_first
-from autogluon.tabular import TabularPredictor
-
-
-# NeuralNetTorch_r36_BAG_L2\e1e10a75
-predictor_dire = TabularPredictor.load('AutogluonModels/dire_first', require_version_match=False)
-
-# LightGBM_BAG_L1\T10
-predictor_radiant = TabularPredictor.load('AutogluonModels/radiant_first', require_version_match=False)
+from utils import get_hero_matchups, features_winrates, features_encoded
 
 
 def get_meta_prediction(dire_pick, radiant_pick):
@@ -24,10 +16,10 @@ def get_meta_prediction(dire_pick, radiant_pick):
 
 def get_prediction(dire_pick, radiant_pick, predictor, model, radiant_first=False):
     if radiant_first:
-        features_df = features_onehot_radiant_first(dire_pick, radiant_pick)
+        features_df = features_encoded(dire_pick, radiant_pick, radiant_first=True)
         pred = predictor.predict_proba(features_df, model=model)
     else:
-        features_df = features_onehot(dire_pick, radiant_pick)
+        features_df = features_encoded(dire_pick, radiant_pick, radiant_first=False)
         pred = predictor.predict_proba(features_df, model=model)
 
     return pred

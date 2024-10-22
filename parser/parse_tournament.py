@@ -2,6 +2,7 @@ import os
 import re
 import urllib.request
 from tqdm import tqdm
+import time  # Импортируем библиотеку для паузы
 
 
 def generate_data(tournament_html):
@@ -35,11 +36,14 @@ def generate_data(tournament_html):
             if match:
                 row_matches.append(match[0])
 
-    headers = {"User-Agent": "Mozilla/5.0"}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
     # Loop through the links
     for link in tqdm(row_matches):
         try:
+            # Пауза 0.5 сек перед каждым запросом
+            time.sleep(0.5)
+
             # Create the request
             request = urllib.request.Request(link, headers=headers)
 

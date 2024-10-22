@@ -127,52 +127,47 @@ def features_winrates(dire_pick, radiant_pick):
     return df
 
 
-def get_onehot(pick, is_dire=True):
-    one_hot_encoded = np.zeros(139, dtype=int)
+def pick_feature(pick):
+    combined_array = []
+    for h in pick:
+        if 'Outworld Devourer' == h:
+            h = 'Outworld Destroyer'
+        combined_array.append(id_heroes_names[h])
 
-    for pos, hero in enumerate(pick):
-        if 'Outworld Devourer' == hero:
-            hero = 'Outworld Destroyer'
-        encode_hero = id_heroes_names[hero]
+        for w in list(heroes_attributes[h].values())[:-1]:
+            combined_array.append(w)
+    return combined_array
 
-        if is_dire:
-            one_hot_encoded[int(encode_hero) - 1] = 1
+
+def pick_feature_v2(pick):
+    combined_array = []
+    for h in pick:
+        for w in list(heroes_attributes[h].values())[:-1]:
+            combined_array.append(w)
+
+    return combined_array
+
+
+def pick_feature_v3(pick):
+    combined_array = []
+    for h in pick:
+        if 'Outworld Devourer' == h:
+            h = 'Outworld Destroyer'
+        combined_array.append(id_heroes_names[h])
+
+    return combined_array
+
+
+def features_dataset_encoded(df, radiant_first=False):
+    X = []
+    for i in range(len(df)):
+
+        dire = pick_feature_v3(df.iloc[i]['dire_heroes'])
+        radiant = pick_feature_v3(df.iloc[i]['radiant_heroes'])
+        if radiant_first:
+            combined_array = radiant + dire
         else:
-            one_hot_encoded[int(encode_hero) - 1] = -1
-    return one_hot_encoded
-
-
-def features_dataset_onehot(df):
-    X = []
-    for i in range(len(df)):
-
-        combined_array = np.concatenate((get_onehot(df.iloc[i]['dire_heroes']), get_onehot(df.iloc[i]['radiant_heroes'], is_dire=False), [int(df.iloc[i]['dire_win'])]))
-        X.append(combined_array)
-
-    return pd.DataFrame(X)
-
-
-def features_dataset_encoded(df):
-    X = []
-    for i in range(len(df)):
-        combined_array = []
-        for h in df.iloc[i]['dire_heroes']:
-            if 'Outworld Devourer' == h:
-                h = 'Outworld Destroyer'
-
-            combined_array.append(id_heroes_names[h])
-
-            for w in list(heroes_attributes[h].values())[:-1]:
-                combined_array.append(w)
-
-
-        for h in df.iloc[i]['radiant_heroes']:
-            if 'Outworld Devourer' == h:
-                h = 'Outworld Destroyer'
-            combined_array.append(id_heroes_names[h])
-
-            for w in list(heroes_attributes[h].values())[:-1]:
-                combined_array.append(w)
+            combined_array = dire + radiant
 
         combined_array.append(df.iloc[i]['dire_win'])
         X.append(combined_array)
@@ -180,36 +175,17 @@ def features_dataset_encoded(df):
     return pd.DataFrame(X)
 
 
-def features_dataset_onehot_radiant_first(df):
-    X = []
-    for i in range(len(df)):
+def features_encoded(dire_pick, radiant_pick, radiant_first=False):
+    dire = pick_feature_v3(dire_pick)
+    radiant = pick_feature_v3(radiant_pick)
 
-        combined_array = np.concatenate((get_onehot(df.iloc[i]['radiant_heroes']), get_onehot(df.iloc[i]['dire_heroes']), [int(df.iloc[i]['radiant_win'])]))
-        X.append(combined_array)
-
-    return pd.DataFrame(X)
-
-
-def features_onehot(dire_pick, radiant_pick):
-    X = []
-
-    combined_array = np.concatenate((get_onehot(dire_pick), get_onehot(radiant_pick), [0]))
-    X.append(combined_array)
-
-    df = pd.DataFrame(X)
-    df.columns = df.columns.map(str)
-    return df
+    if radiant_first:
+        return pd.DataFrame([radiant + dire])
+    else:
+        return pd.DataFrame([dire + radiant])
 
 
-def features_onehot_radiant_first(dire_pick, radiant_pick):
-    X = []
-
-    combined_array = np.concatenate((get_onehot(radiant_pick), get_onehot(dire_pick), [0]))
-    X.append(combined_array)
-
-    df = pd.DataFrame(X)
-    df.columns = df.columns.map(str)
-    return df
-
+# print(pick_feature(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink']))
+# print(features_encoded(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink'], ['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink']))
 
 

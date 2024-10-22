@@ -4,7 +4,7 @@ import pandas as pd
 from tqdm import tqdm
 
 
-def filter_match(soup, odds_threshold=1.65):
+def filter_match(soup, odds_threshold=1.65, prob_threshold=10):
     teams = soup.find_all('a', class_='team__stats-name')
 
     if len(teams) < 2:
@@ -79,7 +79,7 @@ def filter_match(soup, odds_threshold=1.65):
             'percentage_diff': round(team1_percentage - team2_percentage, 2)
         }
 
-        if abs(result['team_1_percentage'] - result['team_2_percentage']) < 5:
+        if abs(result['team_1_percentage'] - result['team_2_percentage']) < prob_threshold:
             return True, None
 
         outsider = 'team_1' if result['team_1_percentage'] < result['team_2_percentage'] else 'team_2'
@@ -187,7 +187,7 @@ def parse_match_info(soup, outsider_name=None):
     return result
 
 
-def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=1.7):
+def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=1.7, prob_threshold=10):
     if not os.path.exists(match_dir):
         raise FileNotFoundError(f"Match directory not found: {match_dir}")
 
@@ -223,6 +223,16 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-#  parse_matches('matches', 'addition_matches', filtered=True, odds_threshold=1.69)
-parse_matches('C:\\Users\\Ridz\\Desktop\\matches all', 'matches_v5', filtered=True, odds_threshold=1.75)
+parse_matches('matches', 'pgl_valhalla', filtered=False, odds_threshold=1.85, prob_threshold=2)
 
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'major_matches_185_2_2021_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'bad_major_matches_170_10_2021_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'major_matches_160_20_2021_2024', filtered=True, odds_threshold=1.6, prob_threshold=20)
+
+# parse_matches('C:\\Users\\Ridz\\Desktop\\matches_2023_2024', 'all_matches_185_2_2023_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\matches_2023_2024', 'all_matches_170_10_2023_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\matches_2023_2024', 'all_matches_160_20_2023_2024', filtered=True, odds_threshold=1.6, prob_threshold=20)
+
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_185_2_2019_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_170_10_2019_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_160_20_2019_2024', filtered=True, odds_threshold=1.6, prob_threshold=20)

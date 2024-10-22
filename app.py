@@ -5,12 +5,9 @@ from prediction import get_prediction, get_hero_stats, parse_match_info_for_gui,
 from utils import get_match_picks, read_heroes
 
 
-predictor_dire = TabularPredictor.load('AutogluonModels/dire_first', require_version_match=False)
-dire_model = 'NeuralNetTorch_r36_BAG_L2\\e1e10a75'
-
-
-predictor_radiant = TabularPredictor.load('AutogluonModels/radiant_first', require_version_match=False)
-radiant_model = 'LightGBM_BAG_L1\\T10'
+# CatBoost_r50_FULL
+predictor_dire = TabularPredictor.load('models_v2/dire_first', require_version_match=False)
+dire_model = 'CatBoost_r50_FULL'
 
 
 def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
@@ -64,29 +61,30 @@ def display_hero_stats(dire_pick, radiant_pick, pred_pick=None):
 
 def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_team='Radiant'):
 
+    print(dire_pick)
+    print(radiant_pick)
+
     dire_pred = get_prediction(dire_pick, radiant_pick, predictor_dire, dire_model)
-    radiant_pred = get_prediction(dire_pick, radiant_pick, predictor_radiant, radiant_model, radiant_first=True)
-    if float(dire_pred[0]) > 0.5:
+    print(dire_pred)
+    if float(dire_pred[False]) > 0.5:
         st.header(f"{radiant_team}")
         st.write('-----')
         col1, col2 = st.columns(2)
         with col1:
             st.json(radiant_pick)
         with col2:
-            st.metric('', f"{float(dire_pred[0]) * 100:.2f}%")
-            st.metric('', f"{float(radiant_pred[1]) * 100:.2f}%")
+            st.metric('', f"{float(dire_pred[False]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Radiant')
 
-    if float(dire_pred[1] > 0.5):
+    if float(dire_pred[True] > 0.5):
         st.header(f"{dire_team}")
         st.write('-----')
         col1, col2 = st.columns(2)
         with col1:
             st.json(dire_pick)
         with col2:
-            st.metric('', f"{float(dire_pred[1]) * 100:.2f}%")
-            st.metric('', f"{float(radiant_pred[0]) * 100:.2f}%")
+            st.metric('', f"{float(dire_pred[True]) * 100:.2f}%")
         st.write('-----')
         display_hero_stats(dire_pick, radiant_pick, 'Dire')
 
