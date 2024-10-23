@@ -23,18 +23,18 @@ def train_model(train_dataset_path, label_column):
     return predictor
 
 
-# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 10)
-train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 10)
+train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 100)
+train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 100)
 
-train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 10)
-train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 10)
+train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 100)
+train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 100)
 
-train_model('data/datasets/major_matches_185_2_2019_2024.pkl', 10)
-train_model('data/datasets/major_matches_185_2_2021_2024.pkl', 10)
+train_model('data/datasets/major_matches_185_2_2019_2024.pkl', 100)
+train_model('data/datasets/major_matches_185_2_2021_2024.pkl', 100)
 
-train_model('data/datasets/all_matches_160_20_2023_2024.pkl', 10)
-train_model('data/datasets/all_matches_170_10_2023_2024.pkl', 10)
-train_model('data/datasets/all_matches_185_2_2023_2024.pkl.pkl', 10)
+train_model('data/datasets/all_matches_160_20_2023_2024.pkl', 100)
+train_model('data/datasets/all_matches_170_10_2023_2024.pkl', 100)
+train_model('data/datasets/all_matches_185_2_2023_2024.pkl.pkl', 100)
 
 # if __name__ == "__main__":
 #

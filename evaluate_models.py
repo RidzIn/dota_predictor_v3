@@ -10,11 +10,13 @@ from utils import features_dataset_encoded
 
 st.title("Models Evaluation")
 
-MODEL_PATH = 'models_v2/dire_first'
+# models_v2/major_matches_170_10_2019_2024
+# models_v2/major_matches_170_10_2021_2024
+MODEL_PATH = 'models_v2/major_matches_170_10_2021_2024'
 TI13_PATH = 'data/datasets/ti13.pkl'
 PGL_VALHALLA_PATH = 'data/datasets/pgl_valhalla.pkl'
 VALIDATION_DATASET_PATH = 'data/datasets/validation_dataset.pkl'
-
+BB_DACHA_PATH = 'parser/bb_dacha.pkl'
 
 
 @st.cache_resource
@@ -33,11 +35,7 @@ def load_data(file_path):
 
 def print_stat(df, total_bank, method='', bet_amount=100):
 
-    # Вычисление квантилей
-    right_df = df[df['is_correct'] == True]
-    wrong_df = df[df['is_correct'] == False]
 
-    # Отображение статистики с помощью Streamlit
     st.header(f"Метод предсказания: {method}")
     st.write("---")
 
@@ -49,14 +47,11 @@ def print_stat(df, total_bank, method='', bet_amount=100):
     st.markdown(f"**Неправильных предсказаний:** {len(df) - sum(df['is_correct'])}")
     st.write("---")
 
-    # Задаем пользовательские границы интервалов
     bin_edges = [0, 1.4, 1.7, 2.0, 3.0, 6.0]
     df['odd_range'] = pd.cut(df['pred_odd'], bins=bin_edges, include_lowest=True)
 
-    # Группируем данные по диапазонам коэффициентов и считаем правильные и неправильные предсказания
     grouped = df.groupby('odd_range', observed=True)['is_correct'].value_counts().unstack().fillna(0)
 
-    # Создаем столбчатую диаграмму
     fig, ax = plt.subplots(figsize=(12, 6))
     grouped.plot(kind='bar', stacked=False, color=['red', 'green'], ax=ax)
     plt.title('Количество правильных и неправильных предсказаний по диапазонам коэффициентов')
@@ -64,13 +59,13 @@ def print_stat(df, total_bank, method='', bet_amount=100):
     plt.ylabel('Количество предсказаний')
     plt.legend(['Неправильные', 'Правильные'])
 
-    # Отображаем график в Streamlit
+
     st.pyplot(fig)
 
     st.write('------')
 
 
-def evaluate_models(predictor, ti13, pgl_valhalla, valid_df):
+def evaluate_models(predictor, ti13, pgl_valhalla, valid_df, bb_dacha):
     if ti13 is not None:
         st.subheader("TI13 Valhalla")
         ti13_features = features_dataset_encoded(ti13, radiant_first=False)
@@ -86,9 +81,14 @@ def evaluate_models(predictor, ti13, pgl_valhalla, valid_df):
         valid_df_features = features_dataset_encoded(valid_df, radiant_first=False)
         st.write(predictor.leaderboard(valid_df_features))
 
-    if ti13 is not None and pgl_valhalla is not None and valid_df is not None:
+    if bb_dacha is not None:
+        st.subheader("BB Dacha")
+        bb_dacha_features = features_dataset_encoded(bb_dacha, radiant_first=False)
+        st.write(predictor.leaderboard(bb_dacha_features))
+
+    if ti13 is not None and pgl_valhalla is not None and valid_df is not None and bb_dacha is not None:
         st.subheader("Combination")
-        concat = pd.concat([ti13_features, valid_df_features, pgl_valhalla_features]).reset_index(drop=True)
+        concat = pd.concat([ti13_features, valid_df_features, pgl_valhalla_features, bb_dacha_features]).reset_index(drop=True)
         st.write(predictor.leaderboard(concat))
 
 
@@ -98,6 +98,9 @@ def financial_metrics_for_model(model):
     df2, bank2 = evaluate_tournament(valid_df, predictor, model, only_odds_included=False, radiant_first=False)
     print_stat(df2, total_bank=bank2, method='Valid')
 
+    df4, bank4 = evaluate_tournament(bb_dacha, predictor, model, only_odds_included=False, radiant_first=False)
+    print_stat(df4, total_bank=bank4, method='BB Dacha')
+
     df3, bank3 = evaluate_tournament(pgl_valhalla, predictor, model, only_odds_included=False, radiant_first=False)
     print_stat(df3, total_bank=bank3, method='PGL Valhalla')
 
@@ -106,13 +109,16 @@ def financial_metrics_for_model(model):
     print_stat(df_cat, total_bank=bank_cat, method='Combination')
 
 
+
 ti13 = load_data(TI13_PATH)
 pgl_valhalla = load_data(PGL_VALHALLA_PATH)
 valid_df = load_data(VALIDATION_DATASET_PATH)
+bb_dacha = load_data(BB_DACHA_PATH)
 
 
 if st.button("Evaluate Models"):
-    evaluate_models(predictor, ti13, pgl_valhalla, valid_df)
+    evaluate_models(predictor, ti13, pgl_valhalla, valid_df, bb_dacha)
+
 
 model = st.text_input(label='Model')
 if st.button("Financial Metrics"):

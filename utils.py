@@ -162,8 +162,8 @@ def features_dataset_encoded(df, radiant_first=False):
     X = []
     for i in range(len(df)):
 
-        dire = pick_feature_v3(df.iloc[i]['dire_heroes'])
-        radiant = pick_feature_v3(df.iloc[i]['radiant_heroes'])
+        dire = pick_feature(df.iloc[i]['dire_heroes'])
+        radiant = pick_feature(df.iloc[i]['radiant_heroes'])
         if radiant_first:
             combined_array = radiant + dire
         else:
@@ -176,8 +176,8 @@ def features_dataset_encoded(df, radiant_first=False):
 
 
 def features_encoded(dire_pick, radiant_pick, radiant_first=False):
-    dire = pick_feature_v3(dire_pick)
-    radiant = pick_feature_v3(radiant_pick)
+    dire = pick_feature(dire_pick)
+    radiant = pick_feature(radiant_pick)
 
     if radiant_first:
         return pd.DataFrame([radiant + dire])

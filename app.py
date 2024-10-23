@@ -5,9 +5,34 @@ from prediction import get_prediction, get_hero_stats, parse_match_info_for_gui,
 from utils import get_match_picks, read_heroes
 
 
-# CatBoost_r50_FULL
-predictor_dire = TabularPredictor.load('models_v2/dire_first', require_version_match=False)
-dire_model = 'CatBoost_r50_FULL'
+# # CatBoost_r50_FULL
+# predictor_dire = TabularPredictor.load('models_v2/major_matches_170_10_2021_2024', require_version_match=False)
+# dire_model = 'XGBoost_r34'
+
+
+
+# CatBoost_r13_FULL
+# models_v2/major_matches_170_10_2021_2024
+predictor_1 = TabularPredictor.load('models_v2/major_matches_170_10_2021_2024', require_version_match=False)
+
+
+# LightGBM_r15, CatBoost_r86_FULL
+# models_v2/major_matches_170_10_2019_2024
+predictor_2 = TabularPredictor.load('models_v2/major_matches_170_10_2019_2024', require_version_match=False)
+
+
+def get_pred(dire_pick, radiant_pick, dire_team, radiant_team):
+    pred1 = get_prediction(dire_pick, radiant_pick, predictor_1, 'CatBoost_r13_FULL', is_proba=False)
+    pred2 = get_prediction(dire_pick, radiant_pick, predictor_2, 'CatBoost_r86_FULL', is_proba=False)
+    pred3 = get_prediction(dire_pick, radiant_pick, predictor_2, 'LightGBM_r15', is_proba=False)
+    # st.write(pred1[0])
+    # st.write(pred2[0])
+    # st.write(pred3[0])
+
+    if sum([pred1[0], pred2[0], pred3[0]]) >= 2:
+        return dire_pick, dire_team, sum([pred1[0], pred2[0], pred3[0]])
+    else:
+        return radiant_pick, radiant_team, 3 - sum([pred1[0], pred2[0], pred3[0]])
 
 
 def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_team='Radiant'):
@@ -15,27 +40,45 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     print(dire_pick)
     print(radiant_pick)
 
-    dire_pred = get_prediction(dire_pick, radiant_pick, predictor_dire, dire_model)
-    print(dire_pred)
-    if float(dire_pred[False]) > 0.5:
-        st.header(f"{radiant_team}")
-        st.write('-----')
-        col1, col2 = st.columns(2)
-        with col1:
-            st.json(radiant_pick)
-        with col2:
-            st.metric('', f"{float(dire_pred[False]) * 100:.2f}%")
-        st.write('-----')
+    # dire_pred = get_prediction(dire_pick, radiant_pick, predictor_dire, dire_model)
 
-    if float(dire_pred[True] > 0.5):
-        st.header(f"{dire_team}")
-        st.write('-----')
-        col1, col2 = st.columns(2)
-        with col1:
-            st.json(dire_pick)
-        with col2:
-            st.metric('', f"{float(dire_pred[True]) * 100:.2f}%")
-        st.write('-----')
+    pred_pick, pred_team, score = get_pred(dire_pick, radiant_pick, dire_team, radiant_team)
+
+    st.write('-----')
+
+    st.header(f"{pred_team}")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.json(pred_pick)
+    with col2:
+        st.metric('', f"{score}")
+
+    st.write('-----')
+
+    # st.write(pred_team)
+    # st.write(pred_team)
+    # print(dire_pred)
+    # if float(dire_pred[False]) > 0.5:
+    #     st.header(f"{radiant_team}")
+    #     st.write('-----')
+    #     col1, col2 = st.columns(2)
+    #     with col1:
+    #         st.json(radiant_pick)
+    #     with col2:
+    #         st.metric('', f"{float(dire_pred[False]) * 100:.2f}%")
+    #     st.write('-----')
+    #
+    # if float(dire_pred[True] > 0.5):
+    #     st.header(f"{dire_team}")
+    #     st.write('-----')
+    #     col1, col2 = st.columns(2)
+    #     with col1:
+    #         st.json(dire_pick)
+    #     with col2:
+    #         st.metric('', f"{float(dire_pred[True]) * 100:.2f}%")
+    #     st.write('-----')
 
 
 tab0, tab1, tab2 = st.tabs(["Link", 'Match id', 'Test Yourself'])

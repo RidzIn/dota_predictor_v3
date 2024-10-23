@@ -14,13 +14,19 @@ def get_meta_prediction(dire_pick, radiant_pick):
     return {"dire": dire_win_prob, "radiant": 1 - dire_win_prob}
 
 
-def get_prediction(dire_pick, radiant_pick, predictor, model, radiant_first=False):
+def get_prediction(dire_pick, radiant_pick, predictor, model, radiant_first=False, is_proba=True):
     if radiant_first:
         features_df = features_encoded(dire_pick, radiant_pick, radiant_first=True)
-        pred = predictor.predict_proba(features_df, model=model)
+        if is_proba:
+            pred = predictor.predict_proba(features_df, model=model)
+        else:
+            pred = predictor.predict(features_df, model=model)
     else:
         features_df = features_encoded(dire_pick, radiant_pick, radiant_first=False)
-        pred = predictor.predict_proba(features_df, model=model)
+        if is_proba:
+            pred = predictor.predict_proba(features_df, model=model)
+        else:
+            pred = predictor.predict(features_df, model=model)
 
     return pred
 
