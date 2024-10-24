@@ -2,7 +2,7 @@ from copy import copy
 
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-from prediction import get_prediction
+from prediction import get_prediction, get_votes_prediction
 import pandas as pd
 import numpy as np
 
@@ -28,11 +28,9 @@ def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount
     predicted_odds = []
     total_bank = 0
     for row in tqdm(tournament.itertuples()):
+
         # Get prediction
-        if radiant_first:
-            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=True)
-        else:
-            prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=False)
+        prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=radiant_first)
 
         # Prediction probability
         max_prob = prediction_df.values.max()
@@ -153,3 +151,89 @@ def evaluate_combination(df_1, df_2, bet_amount=100):
     print_stat(combined_df, 'Combination', bet_amount, total_bank)
 
     return combined_df
+
+
+def evaluate_tournament_scores(tournament, models, threshold=2, bet_amount=100, only_odds_included=False):
+    """
+    Evaluate the tournament predictions and calculate accuracy.
+
+    Parameters:
+    - tournament (pd.DataFrame): DataFrame containing tournament data.
+    - prediction_method (str): The prediction method to use ('NN' or other).
+
+    Returns:
+    - pd.DataFrame: DataFrame with match information and prediction results.
+    """
+    y_true = []
+    y_pred = []
+    pred_proba = []
+    teams = []
+    is_correct = []
+    match_infos = []
+    passed_matches = 0
+    predicted_odds = []
+    total_bank = 0
+    for row in tqdm(tournament.itertuples()):
+
+        # Get prediction
+        predicted_dire_win, _, predicted_team, scores = get_votes_prediction(row.dire_heroes, row.radiant_heroes, models=models)
+
+        if scores < threshold:
+            print('Does not match the threshold')
+            continue
+
+        # Actual result
+        actual_dire_win = row.dire_win
+        winning_team = row.dire_team if actual_dire_win else row.radiant_team
+
+
+        if float(row.dire_odds) > 1:
+            if predicted_dire_win == actual_dire_win:
+                if actual_dire_win == 0:
+                    total_bank += (float(row.radiant_odds) * bet_amount - bet_amount)
+                else:
+                    total_bank += (float(row.dire_odds) * bet_amount - bet_amount)
+            else:
+                total_bank -= bet_amount
+
+        if only_odds_included:
+            if row.dire_odds == 0.0:
+                continue
+        predicted_odds.append(float(row.dire_odds) if predicted_dire_win else float(row.radiant_odds))
+
+        predicted_team = row.dire_team if predicted_dire_win else row.radiant_team
+
+        passed_matches += 1
+
+        pred_proba.append(scores)
+        y_true.append(winning_team)
+        y_pred.append(predicted_team)
+
+        # Match and team info
+        match_info = f"|Match ID: {row.match_id} | Map {row.map_number}|"
+        match_infos.append(match_info)
+
+        team_info = f"{row.radiant_team} | {row.dire_team}"
+        teams.append(team_info)
+
+        # Correct prediction
+        is_correct.append(actual_dire_win == predicted_dire_win)
+
+    # Create DataFrame
+    df = pd.DataFrame({
+        'match_info': match_infos,
+        'teams': teams,
+        'y_true': y_true,
+        'y_pred': y_pred,
+        'pred_odd': predicted_odds,
+        'is_correct': is_correct,
+        'pred_proba': pred_proba
+    })
+
+    temp_pred_odds = []
+    for i in predicted_odds:
+        if i > 1:
+            temp_pred_odds.append(i)
+
+    print_stat(df, "Scores", bet_amount, total_bank)
+    return df, total_bank

@@ -234,5 +234,5 @@ parse_matches('matches', 'bb_dacha', filtered=False, odds_threshold=1.85, prob_t
 # parse_matches('C:\\Users\\Ridz\\Desktop\\matches_2023_2024', 'all_matches_160_20_2023_2024', filtered=True, odds_threshold=1.6, prob_threshold=20)
 
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_185_2_2019_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
-# parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_170_10_2019_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)
+# parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'temp_2', filtered=True, odds_threshold=1.70, prob_threshold=10)
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_all', 'major_matches_160_20_2019_2024', filtered=True, odds_threshold=1.6, prob_threshold=20)

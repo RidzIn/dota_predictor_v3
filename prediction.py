@@ -1,38 +1,28 @@
 import urllib
 from bs4 import BeautifulSoup
-from utils import get_hero_matchups, features_winrates, features_encoded
+from utils import features_encoded
 
 
-def get_meta_prediction(dire_pick, radiant_pick):
-    """Parse data from OpenDota API and calculate win probability based on recent matches played on this
-    heroes by non-professional players"""
-    avg_winrates = {}
-    for hero in dire_pick:
-        temp_df = get_hero_matchups(hero, radiant_pick)
-        avg_winrates[hero] = temp_df["winrate"].sum() / 5
-    dire_win_prob = round(sum(avg_winrates.values()) / 5, 3)
-    return {"dire": dire_win_prob, "radiant": 1 - dire_win_prob}
+def get_votes_prediction(dire_pick, radiant_pick, models, dire_team='Dire', radiant_team='Radiant'):
+    predictions = []
 
+    for predictor, model_name, method in models:
+        pred = get_prediction(dire_pick, radiant_pick, predictor, model_name, is_proba=False, method=method)
+        predictions.append(pred[0])
 
-def get_prediction(dire_pick, radiant_pick, predictor, model, radiant_first=False, is_proba=True):
-    if radiant_first:
-        features_df = features_encoded(dire_pick, radiant_pick, radiant_first=True)
-        if is_proba:
-            pred = predictor.predict_proba(features_df, model=model)
-        else:
-            pred = predictor.predict(features_df, model=model)
+    dire_votes = sum(predictions)
+    radiant_votes = len(predictions) - dire_votes
+
+    if dire_votes >= radiant_votes:
+        return 1, dire_pick, dire_team, dire_votes
     else:
-        features_df = features_encoded(dire_pick, radiant_pick, radiant_first=False)
-        if is_proba:
-            pred = predictor.predict_proba(features_df, model=model)
-        else:
-            pred = predictor.predict(features_df, model=model)
+        return 0, radiant_pick, radiant_team, radiant_votes
 
+
+def get_prediction(dire_pick, radiant_pick, predictor, model, method, radiant_first=False, is_proba=True):
+    features_df = features_encoded(dire_pick, radiant_pick, radiant_first=radiant_first, method=method)
+    pred = predictor.predict_proba(features_df, model=model) if is_proba else predictor.predict(features_df, model=model)
     return pred
-
-
-def get_hero_stats(dire_pick, radiant_pick):
-    return features_winrates(dire_pick, radiant_pick)
 
 
 def parse_match_info_for_gui(link, map_number):
