@@ -17,7 +17,7 @@ from utils import read_heroes
 # RandomForest_r16_FULL - 5000
 
 # models_v2/major_matches_170_10_2019_2024
-# CatBoost_r13_FUL - 5000
+# CatBoost_r13_FULL - 5000
 
 
 predictor_1 = TabularPredictor.load('models_v2/test_2', require_version_match=False)

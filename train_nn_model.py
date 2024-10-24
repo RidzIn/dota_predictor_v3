@@ -23,8 +23,8 @@ def train_model(train_dataset_path, label_column):
     return predictor
 
 
-train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 10)
-train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 10)
+# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 10)
+# train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 10)
 
 # train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 10)
 # train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 10)
