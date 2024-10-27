@@ -1,42 +1,38 @@
 import streamlit as st
 from autogluon.tabular import TabularPredictor
 
-from prediction import get_prediction, parse_match_info_for_gui, get_votes_prediction
+from prediction import parse_match_info_for_gui, get_votes_prediction
 from utils import read_heroes
 
 
-# models_v2/test_2
-# CatBoost_r137_FULL - 5100
-# CatBoost_r86_FULL - 4848
-
-
-# models_v2/test_3
-# CatBoost_r49 - 6100
-
-# major_matches_170_10_2021_2024
-# RandomForest_r16_FULL - 5000
-
-# models_v2/major_matches_170_10_2019_2024
-# CatBoost_r13_FULL - 5000
-
-
-predictor_1 = TabularPredictor.load('models_v2/test_2', require_version_match=False)
-
-
-predictor_2 = TabularPredictor.load('models_v2/test_3', require_version_match=False)
-
-
-predictor_3 = TabularPredictor.load('models_v2/major_matches_170_10_2021_2024', require_version_match=False)
-
-
-predictor_4 = TabularPredictor.load('models_v2/major_matches_170_10_2019_2024', require_version_match=False)
 
 models = [
-    (predictor_1, 'CatBoost_r137_FULL', 'attributes'),
-    (predictor_1, 'CatBoost_r86_FULL', 'attributes'),
-    (predictor_2, 'CatBoost_r49', 'attributes'),
-    (predictor_3, 'RandomForest_r16_FULL', 'heroes'),
-    (predictor_4, 'CatBoost_r13_FULL', 'heroes')
+    (TabularPredictor.load('models_v3/attributes_dire_170_10_2019_2024', require_version_match=False),
+     'ExtraTreesEntr_FULL', 'attributes', False),
+
+    (TabularPredictor.load('models_v3/attributes_radiant_170_10_2019_2024', require_version_match=False),
+     'LightGBMXT', 'attributes', True),
+
+    (TabularPredictor.load('models_v3/attributes_radiant_170_10_2021_2024', require_version_match=False),
+     'LightGBM_r143', 'attributes', True),
+
+    (TabularPredictor.load('models_v3/heroes_only_dire_170_10_2019_2024', require_version_match=False),
+     'CatBoost_r69', 'heroes', False),
+
+    (TabularPredictor.load('models_v3/heroes_only_dire_170_10_2021_2024', require_version_match=False),
+     'CatBoost_r167', 'heroes', False),
+
+    (TabularPredictor.load('models_v3/heroes_only_radiant_170_10_2019_2024', require_version_match=False),
+     'CatBoost_r50_FULL', 'heroes', True),
+
+    (TabularPredictor.load('models_v3/heroes_only_radiant_170_10_2021_2024', require_version_match=False),
+     'LightGBM_r131', 'heroes', True),
+
+    (TabularPredictor.load('models_v3/onehot_dire_170_10_2019_2024', require_version_match=False),
+     'NeuralNetTorch_r185_FULL', 'onehot', False),
+
+    (TabularPredictor.load('models_v3/onehot_radiant_170_10_2021_2024', require_version_match=False),
+     'XGBoost_r98_FULL', 'onehot', True)
 ]
 
 
@@ -44,6 +40,10 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
 
     _, pred_pick, pred_team, score = get_votes_prediction(dire_pick, radiant_pick, models, dire_team, radiant_team)
 
+    if score == 5:
+        st.warning("Unpredictable!")
+
+    st.warning("The prediction is based on scores ranging from 5 to 9, where a higher score indicates a greater probability of the team winning.")
     st.write('-----')
 
     st.header(f"{pred_team}")
@@ -58,12 +58,13 @@ def display_full_prediction(dire_pick, radiant_pick, dire_team='Dire', radiant_t
     st.write('-----')
 
 
+
 tab0, tab2 = st.tabs(["Link", 'Test Yourself'])
 
 with tab0:
     st.header("Insert Link")
     link = st.text_input(label="Enter")
-    map_number = st.selectbox("Map number:", list(range(1, 5)))
+    map_number = st.selectbox("Map number:", list(range(1, 6)))
     predict_button = st.button('Predict')
     if predict_button:
         match_info = parse_match_info_for_gui(link, map_number)

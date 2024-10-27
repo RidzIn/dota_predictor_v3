@@ -30,12 +30,12 @@ def evaluate_tournament(tournament, predictor, model, threshold=0.50, bet_amount
     for row in tqdm(tournament.itertuples()):
 
         # Get prediction
-        prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=radiant_first)
+        prediction_df = get_prediction(row.dire_heroes, row.radiant_heroes, predictor=predictor, model=model, radiant_first=radiant_first, method=method)
 
         # Prediction probability
         max_prob = prediction_df.values.max()
         if max_prob < threshold:
-            print('Does not match the threshold')
+            # print('Does not match the threshold')
             continue
 
         # Actual result
@@ -153,7 +153,7 @@ def evaluate_combination(df_1, df_2, bet_amount=100):
     return combined_df
 
 
-def evaluate_tournament_scores(tournament, models, threshold=2, bet_amount=100, only_odds_included=False):
+def evaluate_tournament_scores(tournament, models, threshold=2, bet_amount=250, only_odds_included=False):
     """
     Evaluate the tournament predictions and calculate accuracy.
 
@@ -179,7 +179,7 @@ def evaluate_tournament_scores(tournament, models, threshold=2, bet_amount=100, 
         predicted_dire_win, _, predicted_team, scores = get_votes_prediction(row.dire_heroes, row.radiant_heroes, models=models)
 
         if scores < threshold:
-            print('Does not match the threshold')
+            # print('Does not match the threshold')
             continue
 
         # Actual result

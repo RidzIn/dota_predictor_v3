@@ -6,8 +6,9 @@ from utils import features_encoded
 def get_votes_prediction(dire_pick, radiant_pick, models, dire_team='Dire', radiant_team='Radiant'):
     predictions = []
 
-    for predictor, model_name, method in models:
-        pred = get_prediction(dire_pick, radiant_pick, predictor, model_name, is_proba=False, method=method)
+    for predictor, model_name, method, is_radiant in models:
+        pred = get_prediction(dire_pick, radiant_pick, predictor, model_name, is_proba=False, method=method, radiant_first=is_radiant)
+        # print(get_prediction(dire_pick, radiant_pick, predictor, model_name, is_proba=True, method=method, radiant_first=is_radiant))
         predictions.append(pred[0])
 
     dire_votes = sum(predictions)

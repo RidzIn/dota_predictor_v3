@@ -25,7 +25,7 @@ def read_heroes(file_name="data/util/heroes.txt"):
     return hero_set
 
 
-def pick_feature(pick):
+def pick_attribute_heroes_feature(pick):
     combined_array = []
     for h in pick:
         if 'Outworld Devourer' == h:
@@ -37,7 +37,7 @@ def pick_feature(pick):
     return combined_array
 
 
-def pick_feature_v2(pick):
+def pick_only_attributes_feature(pick):
     combined_array = []
     for h in pick:
         for w in list(heroes_attributes[h].values())[:-1]:
@@ -46,7 +46,7 @@ def pick_feature_v2(pick):
     return combined_array
 
 
-def pick_feature_v3(pick):
+def pick_only_heroes_feature(pick):
     combined_array = []
     for h in pick:
         if 'Outworld Devourer' == h:
@@ -54,17 +54,35 @@ def pick_feature_v3(pick):
         combined_array.append(id_heroes_names[h])
 
     return combined_array
+
+
+def pick_onehot_feature(pick):
+    one_hot_array = [0] * 139
+
+    for h in pick:
+        if h == 'Outworld Devourer':
+            h = 'Outworld Destroyer'
+
+        hero_index = id_heroes_names[h]
+
+        one_hot_array[int(hero_index)] = 1
+
+    return one_hot_array
 
 
 def features_dataset_encoded(df, method, radiant_first=False):
     X = []
     for i in range(len(df)):
         if method == 'heroes':
-            dire = pick_feature_v3(df.iloc[i]['dire_heroes'])
-            radiant = pick_feature_v3(df.iloc[i]['radiant_heroes'])
+            dire = pick_only_heroes_feature(df.iloc[i]['dire_heroes'])
+            radiant = pick_only_heroes_feature(df.iloc[i]['radiant_heroes'])
         if method == 'attributes':
-            dire = pick_feature(df.iloc[i]['dire_heroes'])
-            radiant = pick_feature(df.iloc[i]['radiant_heroes'])
+            dire = pick_attribute_heroes_feature(df.iloc[i]['dire_heroes'])
+            radiant = pick_attribute_heroes_feature(df.iloc[i]['radiant_heroes'])
+
+        if method == 'onehot':
+            dire = pick_onehot_feature(df.iloc[i]['dire_heroes'])
+            radiant = pick_onehot_feature(df.iloc[i]['radiant_heroes'])
 
         if radiant_first:
             combined_array = radiant + dire
@@ -79,11 +97,14 @@ def features_dataset_encoded(df, method, radiant_first=False):
 
 def features_encoded(dire_pick, radiant_pick, method, radiant_first=False):
     if method == 'heroes':
-        dire = pick_feature_v3(dire_pick)
-        radiant = pick_feature_v3(radiant_pick)
+        dire = pick_only_heroes_feature(dire_pick)
+        radiant = pick_only_heroes_feature(radiant_pick)
     if method == 'attributes':
-        dire = pick_feature(dire_pick)
-        radiant = pick_feature(radiant_pick)
+        dire = pick_attribute_heroes_feature(dire_pick)
+        radiant = pick_attribute_heroes_feature(radiant_pick)
+    if method == 'onehot':
+        dire = pick_onehot_feature(dire_pick)
+        radiant = pick_onehot_feature(radiant_pick)
 
     if radiant_first:
         return pd.DataFrame([radiant + dire])
@@ -91,7 +112,7 @@ def features_encoded(dire_pick, radiant_pick, method, radiant_first=False):
         return pd.DataFrame([dire + radiant])
 
 
-# print(pick_feature(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink']))
-# print(features_encoded(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink'], ['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink']))
+# print(len(pick_onehot_feature(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink'])))
+# print(features_encoded(['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink'], ['Riki', 'Mars', 'Slark', 'Mirana', 'Hoodwink'], 'onehot'))
 
 
