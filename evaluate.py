@@ -72,6 +72,7 @@ def evaluate_tournament(
     method='Unknown',
     teams_to_exclude=None,
     teams_to_include=None,
+    does_print_stat=None
 ):
     """
     Evaluate the tournament predictions.
@@ -193,6 +194,7 @@ def evaluate_tournament(
         'pred_proba': pred_proba
     })
 
-    print_stat(df, method, bet_amount, total_bank)
+    if does_print_stat:
+        print_stat(df, method, bet_amount, total_bank)
     return df, total_bank
 

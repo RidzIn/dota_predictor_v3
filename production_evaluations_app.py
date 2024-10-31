@@ -67,7 +67,7 @@ models = [
 
 
 datasets = {
-    'TI13 Valhalla': pd.read_pickle('data/datasets/evaluation_datasets/ti13.pkl'),
+    'TI13': pd.read_pickle('data/datasets/evaluation_datasets/ti13.pkl'),
     'PGL Valhalla': pd.read_pickle('data/datasets/evaluation_datasets/pgl_valhalla.pkl'),
     'Validation Dataset': pd.read_pickle('data/datasets/evaluation_datasets/validation_dataset.pkl'),
     'BB Dacha': pd.read_pickle('data/datasets/evaluation_datasets/bb_dacha.pkl'),

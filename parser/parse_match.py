@@ -223,7 +223,8 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-parse_matches('matches', 'dreamleague_group_stage', filtered=False, odds_threshold=1.7, prob_threshold=10)
+
+parse_matches('C:\\Users\\Ridz\Desktop\\group_stage', 'dreamleague_group_stage', filtered=False, odds_threshold=1.6, prob_threshold=20)
 
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'major_matches_185_2_2021_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'bad_major_matches_170_10_2021_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)
