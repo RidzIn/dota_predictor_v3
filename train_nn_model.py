@@ -14,7 +14,7 @@ def train_model(train_path, train_dataset_path, label_column, radiant_first, met
 
     features_train = features_dataset_encoded(train_data, radiant_first=radiant_first, method=method)
 
-    model_output_dir = os.path.join("models_v3", f"{os.path.basename(train_dataset_path)[:-4]}")
+    model_output_dir = os.path.join("models", f"{os.path.basename(train_dataset_path)[:-4]}")
 
     if method == 'onehot':
         predictor = (TabularPredictor(label=label_column, eval_metric='accuracy', path=model_output_dir)
@@ -38,6 +38,12 @@ def train_model(train_path, train_dataset_path, label_column, radiant_first, met
     return predictor
 
 
+# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/winrates_dire_170_10_2021_2024.pkl', label_column=75, radiant_first=False, method='winrates')
+# train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/winrates_dire_170_10_2019_2024.pkl', label_column=75, radiant_first=False, method='winrates')
+#
+# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/winrates_radiant_170_10_2021_2024.pkl', label_column=75, radiant_first=True, method='winrates')
+# train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/winrates_radiant_170_10_2019_2024.pkl', label_column=75, radiant_first=True, method='winrates')
+
 # # Dire Heroes Only
 # train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/heroes_only_dire_170_10_2021_2024.pkl', label_column=10, radiant_first=False, method='heroes')
 # train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/heroes_only_dire_170_10_2019_2024.pkl', label_column=10, radiant_first=False, method='heroes')
@@ -55,7 +61,6 @@ def train_model(train_path, train_dataset_path, label_column, radiant_first, met
 # train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/heroes_only_radiant_160_20_2021_2024.pkl', label_column=10, radiant_first=True, method='heroes')
 #
 #
-#
 # # Dire Attributes
 # train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/attributes_dire_170_10_2021_2024.pkl', label_column=100, radiant_first=False, method='attributes')
 # train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/attributes_dire_170_10_2019_2024.pkl', label_column=100, radiant_first=False, method='attributes')
@@ -71,20 +76,19 @@ def train_model(train_path, train_dataset_path, label_column, radiant_first, met
 # train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 'data/datasets/attributes_radiant_160_20_2019_2024.pkl', label_column=100, radiant_first=True, method='attributes')
 # train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/attributes_radiant_160_20_2021_2024.pkl', label_column=100, radiant_first=True, method='attributes')
 #
-
-
+#
+#
 # Dire OneHot
-train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/onehot_dire_170_10_2021_2024.pkl', label_column=278, radiant_first=False, method='onehot')
-train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/onehot_dire_170_10_2019_2024.pkl', label_column=278, radiant_first=False, method='onehot')
-
-train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 'data/datasets/onehot_dire_160_20_2019_2024.pkl', label_column=278, radiant_first=False, method='onehot')
-train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/onehot_dire_160_20_2021_2024.pkl', label_column=278, radiant_first=False, method='onehot')
-
-
+# train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/onehot_dire_170_10_2021_2024.pkl', label_column=278, radiant_first=False, method='onehot')
+# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/onehot_dire_170_10_2019_2024.pkl', label_column=278, radiant_first=False, method='onehot')
+#
+# train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 'data/datasets/onehot_dire_160_20_2019_2024.pkl', label_column=278, radiant_first=False, method='onehot')
+# train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/onehot_dire_160_20_2021_2024.pkl', label_column=278, radiant_first=False, method='onehot')
+#
 # Radiant OneHot
-train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/onehot_radiant_170_10_2021_2024.pkl', label_column=278, radiant_first=True, method='onehot')
-train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/onehot_radiant_170_10_2019_2024.pkl', label_column=278, radiant_first=True, method='onehot')
-
-train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 'data/datasets/onehot_radiant_160_20_2019_2024.pkl', label_column=278, radiant_first=True, method='onehot')
-train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/onehot_radiant_160_20_2021_2024.pkl', label_column=278, radiant_first=True, method='onehot')
-
+# train_model('data/datasets/major_matches_170_10_2019_2024.pkl', 'data/datasets/onehot_radiant_170_10_2021_2024.pkl', label_column=278, radiant_first=True, method='onehot')
+# train_model('data/datasets/major_matches_170_10_2021_2024.pkl', 'data/datasets/onehot_radiant_170_10_2019_2024.pkl', label_column=278, radiant_first=True, method='onehot')
+#
+# train_model('data/datasets/major_matches_160_20_2019_2024.pkl', 'data/datasets/onehot_radiant_160_20_2019_2024.pkl', label_column=278, radiant_first=True, method='onehot')
+# train_model('data/datasets/major_matches_160_20_2021_2024.pkl', 'data/datasets/onehot_radiant_160_20_2021_2024.pkl', label_column=278, radiant_first=True, method='onehot')
+#

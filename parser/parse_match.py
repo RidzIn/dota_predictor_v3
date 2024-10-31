@@ -55,7 +55,6 @@ def filter_match(soup, odds_threshold=1.65, prob_threshold=10):
         }
 
         if result[f'{outsider}_score'] > 0:
-            print(f"outsider won: {outsider} maps")
             return True, result[outsider]
 
         return False, None
@@ -84,7 +83,6 @@ def filter_match(soup, odds_threshold=1.65, prob_threshold=10):
 
         outsider = 'team_1' if result['team_1_percentage'] < result['team_2_percentage'] else 'team_2'
         if result[f'{outsider}_score'] > 0:
-            print(f"outsider won: {outsider} maps")
             return True, result[outsider]
 
         return False, None
@@ -201,19 +199,21 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
                 content = file.read()
             soup = BeautifulSoup(content, 'html.parser')
 
-            match_passed_the_filter, outsider_team = filter_match(soup, odds_threshold=odds_threshold)
-
-            if match_passed_the_filter:
+            match_passed_the_filter, outsider_team = filter_match(soup, odds_threshold=odds_threshold, prob_threshold=prob_threshold)
+            if match_passed_the_filter and filtered:
+                # We take only outsides won maps
                 match_info = parse_match_info(soup, outsider_team)
                 for map in match_info:
                     matches_info.append(map)
             elif not filtered:
+                # If not filter takes every map from the match
                 match_info = parse_match_info(soup, None)
                 for map in match_info:
                     matches_info.append(map)
             else:
                 skips += 1
                 print(f"{skips}/{i}")
+
         except UnicodeDecodeError:
             print(f"Couldn't read the file: {match.upper()}")
         except Exception as e:
@@ -223,7 +223,7 @@ def parse_matches(match_dir, file_name="matches", filtered=True, odds_threshold=
     return pd.DataFrame(matches_info).to_pickle(f"{file_name}.pkl")
 
 
-parse_matches('matches', 'bb_dacha', filtered=False, odds_threshold=1.85, prob_threshold=2)
+parse_matches('matches', 'dreamleague_group_stage', filtered=False, odds_threshold=1.7, prob_threshold=10)
 
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'major_matches_185_2_2021_2024', filtered=True, odds_threshold=1.85, prob_threshold=2)
 # parse_matches('C:\\Users\\Ridz\\Desktop\\major_2021_2024', 'bad_major_matches_170_10_2021_2024', filtered=True, odds_threshold=1.70, prob_threshold=10)

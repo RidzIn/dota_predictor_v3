@@ -7,31 +7,31 @@ from utils import read_heroes
 
 
 models = [
-    (TabularPredictor.load('models_v3/attributes_dire_170_10_2019_2024', require_version_match=False),
+    (TabularPredictor.load('models/attributes_dire_170_10_2019_2024', require_version_match=False),
      'ExtraTreesEntr_FULL', 'attributes', False),
 
-    (TabularPredictor.load('models_v3/attributes_radiant_170_10_2019_2024', require_version_match=False),
+    (TabularPredictor.load('models/attributes_radiant_170_10_2019_2024', require_version_match=False),
      'LightGBMXT', 'attributes', True),
 
-    (TabularPredictor.load('models_v3/attributes_radiant_170_10_2021_2024', require_version_match=False),
+    (TabularPredictor.load('models/attributes_radiant_170_10_2021_2024', require_version_match=False),
      'LightGBM_r143', 'attributes', True),
 
-    (TabularPredictor.load('models_v3/heroes_only_dire_170_10_2019_2024', require_version_match=False),
+    (TabularPredictor.load('models/heroes_only_dire_170_10_2019_2024', require_version_match=False),
      'CatBoost_r69', 'heroes', False),
 
-    (TabularPredictor.load('models_v3/heroes_only_dire_170_10_2021_2024', require_version_match=False),
+    (TabularPredictor.load('models/heroes_only_dire_170_10_2021_2024', require_version_match=False),
      'CatBoost_r167', 'heroes', False),
 
-    (TabularPredictor.load('models_v3/heroes_only_radiant_170_10_2019_2024', require_version_match=False),
+    (TabularPredictor.load('models/heroes_only_radiant_170_10_2019_2024', require_version_match=False),
      'CatBoost_r50_FULL', 'heroes', True),
 
-    (TabularPredictor.load('models_v3/heroes_only_radiant_170_10_2021_2024', require_version_match=False),
+    (TabularPredictor.load('models/heroes_only_radiant_170_10_2021_2024', require_version_match=False),
      'LightGBM_r131', 'heroes', True),
 
-    (TabularPredictor.load('models_v3/onehot_dire_170_10_2019_2024', require_version_match=False),
+    (TabularPredictor.load('models/onehot_dire_170_10_2019_2024', require_version_match=False),
      'NeuralNetTorch_r185_FULL', 'onehot', False),
 
-    (TabularPredictor.load('models_v3/onehot_radiant_170_10_2021_2024', require_version_match=False),
+    (TabularPredictor.load('models/onehot_radiant_170_10_2021_2024', require_version_match=False),
      'XGBoost_r98_FULL', 'onehot', True)
 ]
 

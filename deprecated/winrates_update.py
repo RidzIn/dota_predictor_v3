@@ -153,4 +153,4 @@ def update_winrates(data_file_path, winrates_file_name):
 # update_winrates("C:\\Users\\Ridz\\Desktop\\Matches\\major_matches.pkl", "data/winrates_major_v2.json")
 
 
-update_winrates("../data/datasets/major_matches_170_10_2021_2024.pkl", "data/winrates.json")
+update_winrates("../data/datasets/major_matches_170_10_2019_2024.pkl", "data/winrates.json")
